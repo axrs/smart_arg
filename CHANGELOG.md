@@ -3,7 +3,8 @@
 - Breaking:
     - Upgraded for Null Type Safety. Requires minimum Dart version `2.12.0`
     - Upgraded reflectable to `3.0.4`
-- Added
+- Added:
+    - Support for reading arguments from Environment Variables if not provided during parsing
     - Extra methods to `SmartArg` for handling lifecycle operations. Useful for DI instantiation
         - `beforeCommandParse`
         - `beforeCommandExecute`
