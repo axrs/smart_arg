@@ -3,7 +3,7 @@ Smart Arg
 
 [![Build Status](https://travis-ci.org/jcowgar/smart_arg.svg?branch=master)](https://travis-ci.org/jcowgar/smart_arg)
 [![codecov](https://codecov.io/gh/jcowgar/smart_arg/branch/master/graph/badge.svg)](https://codecov.io/gh/jcowgar/smart_arg)
-[![Pub](https://img.shields.io/pub/v/smart_arg.svg)](https://pub.dartlang.org/packages/smart_arg)
+[![Pub](https://img.shields.io/pub/v/smart_arg_fork.svg)](https://pub.dartlang.org/packages/smart_arg_fork)
 
 A source generated, simple to use command line argument parser. The main
 rationale behind this argument parser is the use of a class to store the
