@@ -21,10 +21,6 @@ class _ParsedResult {
   final List<String>? commandArguments;
 
   const _ParsedResult({this.command, this.commandArguments});
-
-  const _ParsedResult.success()
-      : command = null,
-        commandArguments = null;
 }
 
 String? _argumentHelp(MirrorParameterPair mpp) {
@@ -441,7 +437,7 @@ class SmartArg {
 
       if (argument.toLowerCase() == _app!.argumentTerminator?.toLowerCase()) {
         _extras!.addAll(expandedArguments.skip(argumentIndex));
-        return const _ParsedResult.success();
+        return const _ParsedResult();
       } else if (isFalse(argument.startsWith('-'))) {
         if (_commands.containsKey(argument)) {
           var command = _commands[argument]!;
@@ -456,7 +452,7 @@ class SmartArg {
 
           if (isFalse(_app!.allowTrailingArguments)) {
             _extras!.addAll(expandedArguments.skip(argumentIndex));
-            return const _ParsedResult.success();
+            return const _ParsedResult();
           }
 
           continue;
@@ -494,7 +490,7 @@ class SmartArg {
         _trySetValue(instanceMirror, argumentName, value);
       }
     }
-    return const _ParsedResult.success();
+    return const _ParsedResult();
   }
 
   //Attempts to set the value of the argument
