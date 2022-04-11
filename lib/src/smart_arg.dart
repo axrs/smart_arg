@@ -261,7 +261,7 @@ class SmartArg {
 
         List<String> helpLines = [mpp.argument.help ?? 'no help available'];
 
-        if (mpp.argument.isRequired ?? false) {
+        if (mpp.argument.isRequired) {
           helpLines.add('[REQUIRED]');
         }
 

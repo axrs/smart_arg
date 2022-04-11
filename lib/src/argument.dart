@@ -36,7 +36,7 @@ abstract class Argument {
   /// there is an error, will be shown the help screen and if
   /// [SmartArgApp.exitOnFailure] is set to `true`, the application will exit
   /// with the error code 1.
-  final bool? isRequired;
+  final bool isRequired;
 
   /// Environment Variable, if any, that can be used for this property.
   final String? environmentVariable;
@@ -45,9 +45,9 @@ abstract class Argument {
     this.short,
     this.long,
     this.help,
-    this.isRequired = false,
+    bool? isRequired,
     this.environmentVariable,
-  });
+  }) : isRequired = isRequired ?? false;
 
   List<String> specialKeys(String? short, String? long) {
     return [];
