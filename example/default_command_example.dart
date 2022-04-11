@@ -3,10 +3,7 @@ import 'package:smart_arg_fork/smart_arg_fork.dart';
 import 'default_command_example.reflectable.dart';
 
 @SmartArg.reflectable
-@Parser(
-  description: 'Runs the projects unit tests',
-  exitOnHelp: false,
-)
+@Parser(description: 'Runs the projects unit tests')
 class UnitTestCommand extends SmartArg {
   @StringArgument(help: 'Test Suite to run')
   String? suite;
@@ -16,10 +13,7 @@ class UnitTestCommand extends SmartArg {
 }
 
 @SmartArg.reflectable
-@Parser(
-  description: 'Runs the projects integration tests',
-  exitOnHelp: false,
-)
+@Parser(description: 'Runs the projects integration tests')
 class IntegrationTestCommand extends SmartArg {
   @BooleanArgument(help: 'Disable database connection')
   bool disableDatabase = false;
@@ -31,10 +25,7 @@ class IntegrationTestCommand extends SmartArg {
 }
 
 @SmartArg.reflectable
-@Parser(
-  description: 'Runs the projects benchmark tests',
-  exitOnHelp: false,
-)
+@Parser(description: 'Runs the projects benchmark tests')
 class BenchmarkTestCommand extends SmartArg {
   @IntegerArgument(help: 'Times to run')
   int times = 1;
@@ -44,10 +35,7 @@ class BenchmarkTestCommand extends SmartArg {
 }
 
 @SmartArg.reflectable
-@Parser(
-  description: 'A Default Command example',
-  exitOnHelp: false,
-)
+@Parser(description: 'A Default Command example')
 class RootCommand extends SmartArg {
   @DefaultCommand()
   late UnitTestCommand unit;
