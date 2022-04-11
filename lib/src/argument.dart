@@ -1,6 +1,14 @@
-/// Annotation class to provide additional hints on parsing a particular property.
+enum ScopeType { local, inherit }
 
+/// Annotation class to provide additional hints on parsing a particular property.
 abstract class Argument {
+  /// [Argument]s defined with [ScopeType.local] are shared with all sub-commands
+  /// (and sub-commands, to any level of depths). Applications can define a
+  /// [ScopeType.inherited] on the top-level command, in one place, to allow end
+  /// users to specify this options anywhere: not only on the top-level command
+  /// but also on any of the sub-commands and nested sub-commands
+  final ScopeType scope;
+
   /// Short version, if any, that can be used for this property.
   ///
   /// Long option will be the name of the property, the short option will be
@@ -45,9 +53,11 @@ abstract class Argument {
     this.short,
     this.long,
     this.help,
-    bool? isRequired,
     this.environmentVariable,
-  }) : isRequired = isRequired ?? false;
+    bool? isRequired,
+    ScopeType? scope,
+  })  : isRequired = isRequired ?? false,
+        scope = scope ?? ScopeType.local;
 
   List<String> specialKeys(String? short, String? long) {
     return [];

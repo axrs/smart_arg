@@ -18,12 +18,14 @@ class EnumArgument<T> extends Argument {
     dynamic long,
     String? help,
     bool? isRequired,
+    ScopeType? scope,
     String? environmentVariable,
   }) : super(
           short: short,
           long: long,
           help: help,
           isRequired: isRequired,
+          scope: scope,
           environmentVariable: environmentVariable,
         );
 

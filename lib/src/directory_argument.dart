@@ -18,6 +18,7 @@ class DirectoryArgument extends Argument {
     dynamic long,
     String? help,
     bool? isRequired,
+    ScopeType? scope,
     this.mustExist = false,
     String? environmentVariable,
   }) : super(
@@ -25,6 +26,7 @@ class DirectoryArgument extends Argument {
           long: long,
           help: help,
           isRequired: isRequired,
+          scope: scope,
           environmentVariable: environmentVariable,
         );
 

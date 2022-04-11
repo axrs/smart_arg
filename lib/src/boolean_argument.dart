@@ -24,7 +24,8 @@ class BooleanArgument extends Argument {
     String? short,
     dynamic long,
     String? help,
-    bool isRequired = false,
+    bool? isRequired,
+    ScopeType? scope,
     String? environmentVariable,
   }) : super(
           short: short,
@@ -32,6 +33,7 @@ class BooleanArgument extends Argument {
           help: help,
           isRequired: isRequired,
           environmentVariable: environmentVariable,
+          scope: scope,
         );
 
   @override
