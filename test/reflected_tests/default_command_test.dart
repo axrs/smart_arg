@@ -92,7 +92,7 @@ void main() {
 
     group('help', () {
       test('shows root level help', () async {
-        await cmd.parse(['--help']);
+        await cmd.parse(['--help']).run();
 
         expect(output.first, startsWith('A Default Command example'));
         var fullOutput = output.join('');
@@ -102,7 +102,7 @@ void main() {
       });
 
       test('shows sub-command help', () async {
-        await cmd.parse(['integration', '--help']);
+        await cmd.parse(['integration', '--help']).run();
 
         expect(output.first, startsWith('Runs the projects integration tests'));
         var fullOutput = output.join('');
@@ -112,19 +112,19 @@ void main() {
 
     group('executes the command annotated with @DefaultCommand', () {
       test('without args', () async {
-        await cmd.parse([]);
+        await cmd.parse([]).run();
 
         expect(output.first, startsWith('Running Unit Tests'));
       });
 
       test('forwarding args', () async {
-        await cmd.parse(['--suite', 'a-suite']);
+        await cmd.parse(['--suite', 'a-suite']).run();
 
         expect(output.first, startsWith('Running a-suite Tests'));
       });
 
       test('with help reverts back to root command help', () async {
-        await cmd.parse(['--suite', 'a-suite', '--help']);
+        await cmd.parse(['--suite', 'a-suite', '--help']).run();
 
         expect(output.first, startsWith('A Default Command example'));
       });
@@ -133,13 +133,13 @@ void main() {
     group('allows other command execution still', () {
       group('unit', () {
         test('no args', () async {
-          await cmd.parse(['unit']);
+          await cmd.parse(['unit']).run();
 
           expect(output.first, startsWith('Running Unit Tests'));
         });
 
         test('suite', () async {
-          await cmd.parse(['--suite', 'a-suite']);
+          await cmd.parse(['--suite', 'a-suite']).run();
 
           expect(output.first, startsWith('Running a-suite Tests'));
         });
@@ -147,13 +147,13 @@ void main() {
 
       group('benchmark', () {
         test('no args', () async {
-          await cmd.parse(['benchmark']);
+          await cmd.parse(['benchmark']).run();
 
           expect(output.first, startsWith('Running Benchmark Tests 1 times'));
         });
 
         test('suite', () async {
-          await cmd.parse(['benchmark', '--times', '8']);
+          await cmd.parse(['benchmark', '--times', '8']).run();
 
           expect(output.first, startsWith('Running Benchmark Tests 8 times'));
         });
@@ -162,13 +162,13 @@ void main() {
 
     group('commands can be predefined', () {
       test('with pre-defined args', () async {
-        await cmd.parse(['defined-benchmark']);
+        await cmd.parse(['defined-benchmark']).run();
 
         expect(output.first, startsWith('Running Benchmark Tests 10 times'));
       });
 
       test('override args', () async {
-        await cmd.parse(['defined-benchmark', '--times', '200']);
+        await cmd.parse(['defined-benchmark', '--times', '200']).run();
 
         expect(output.first, startsWith('Running Benchmark Tests 200 times'));
       });
@@ -176,13 +176,13 @@ void main() {
 
     group('commands can be predefined as late', () {
       test('with pre-defined args', () async {
-        await cmd.parse(['late-defined-benchmark']);
+        await cmd.parse(['late-defined-benchmark']).run();
 
         expect(output.first, startsWith('Running Benchmark Tests 5 times'));
       });
 
       test('override args', () async {
-        await cmd.parse(['late-defined-benchmark', '--times', '100']);
+        await cmd.parse(['late-defined-benchmark', '--times', '100']).run();
 
         expect(output.first, startsWith('Running Benchmark Tests 100 times'));
       });

@@ -92,12 +92,12 @@ class Args extends SmartArg {
 Future<void> main(List<String> arguments) async {
   initializeReflectable();
   var args = Args();
-  await args.parse(arguments);
+  await args.parse(arguments).run();
   print('header  : ${args.header}');
   print('filename: ${args.filename}');
   print('verbose : ${args.verbose}');
   print('count   : ${args.count}');
   print('silly   : ${args.silly}');
   print('names   : ${args.names?.join(', ')}');
-  print('extras  : ${args.extras!.join(' ')}');
+  print('extras  : ${args.extras.join(' ')}');
 }

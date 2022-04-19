@@ -32,7 +32,7 @@ class Args extends SmartArg {
 Future<void> main(List<String> arguments) async {
   initializeReflectable();
   var args = Args();
-  await args.parse(arguments);
+  await args.parse(arguments).run();
   for (var i = 0; i < args.count; i++) {
     print('${args.greeting}, ${args.name}!');
   }

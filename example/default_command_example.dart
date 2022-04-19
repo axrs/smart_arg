@@ -56,6 +56,5 @@ class RootCommand extends SmartArg {
 
 Future<void> main(List<String> arguments) async {
   initializeReflectable();
-  var args = RootCommand();
-  await args.parse(arguments);
+  await RootCommand().parse(arguments).run();
 }

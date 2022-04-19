@@ -3,6 +3,7 @@ import 'package:reflectable/mirrors.dart';
 import 'argument.dart';
 import 'group.dart';
 import 'parser.dart';
+import 'validation_error.dart';
 
 // Convert `areYouAlive` to `are-you-alive`
 String camelToDash(String value) {
@@ -21,10 +22,13 @@ class MirrorParameterPair {
   final VariableMirror mirror;
   final Argument argument;
   final Group? group;
+  bool isSet = false;
 
-  String? displayKey;
+  late String displayKey;
 
   MirrorParameterPair(this.mirror, this.argument, [this.group]);
+
+  void confirmSet() => isSet = true;
 
   List<String?> keys(Parser? parser) {
     // Local type is needed, otherwise result winds up being a
@@ -54,18 +58,19 @@ class MirrorParameterPair {
     }
 
     result.addAll(argument.specialKeys(short, long));
-
-    displayKey = long is String ? long : short;
-
-    if (displayKey == null) {
+    var key = long is String ? long : short;
+    if (key == null) {
       throw StateError('No key could be found for ${mirror.simpleName})');
     }
+
+    displayKey = key;
+
     if (short?.startsWith('-') ?? false) {
       throw StateError(
         'Short key ($short) defined by short: should not include a leading -',
       );
     }
-    if (short != null && short.length > 1){
+    if (short != null && short.length > 1) {
       throw StateError(
         'Short key ($short) defined by short: should be a single character',
       );

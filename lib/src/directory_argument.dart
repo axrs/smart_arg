@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 
 import 'argument.dart';
+import 'validation_error.dart';
 
 class DirectoryArgument extends Argument {
   /// If supplied, must this `Directory` property actually exist on disk?
@@ -37,7 +38,7 @@ class DirectoryArgument extends Argument {
 
     if (mustExist) {
       if (result.existsSync() == false) {
-        throw ArgumentError('$result for parameter $key does not exist');
+        throw DirectoryMustExistError(key!, normalizedAbsolutePath);
       }
     }
 

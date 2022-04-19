@@ -68,5 +68,5 @@ class Args extends SmartArg {
 Future<void> main(List<String> arguments) async {
   initializeReflectable();
   var args = Args();
-  await args.parse(arguments);
+  await args.parse(arguments).run();
 }

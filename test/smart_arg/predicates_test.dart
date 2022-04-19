@@ -9,12 +9,6 @@ void main() {
       expect(p.isFalse(null), isFalse);
     });
 
-    test('isTrue', () {
-      expect(p.isTrue(false), isFalse);
-      expect(p.isTrue(true), isTrue);
-      expect(p.isTrue(null), isFalse);
-    });
-
     test('isNull', () {
       expect(p.isNull(false), isFalse);
       expect(p.isNull(true), isFalse);
