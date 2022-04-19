@@ -145,13 +145,6 @@ class SmartArg {
 
   late List<String> _arguments;
 
-  Future<void> _runAfterParse() async {
-    await postCommandParse(_arguments);
-    if (isNotNull(parent)) {
-      await parent!._runAfterParse();
-    }
-  }
-
   Future<void> _runPreCommandExecute() async {
     if (isNotNull(parent)) {
       await parent!._runPreCommandExecute();
@@ -194,14 +187,12 @@ class SmartArg {
   Future<void> parse(List<String> arguments) async {
     _resetParser();
     _arguments = arguments;
-    await preCommandParse(arguments);
     try {
       var result = _parse(arguments);
       if (isNotNull(result.command)) {
         await _construct(result.command!).parse(result.commandArguments ?? []);
       } else {
         _validate();
-        await _runAfterParse();
         if (help) {
           output(usage());
           if (isTrue(_app?.exitOnHelp)) {
@@ -621,12 +612,6 @@ class SmartArg {
   void withEnvironment(Map<String, String> environment) {
     _environment = environment;
   }
-
-  /// Awaited before an annotated [Command] parsing has started.
-  Future<void> preCommandParse(List<String> arguments) => Future.value();
-
-  /// Awaited after the [Command] parsing has completed.
-  Future<void> postCommandParse(List<String> arguments) => Future.value();
 
   /// Awaited before a [SmartArg] is executed
   Future<void> preCommandExecute() => Future.value();
