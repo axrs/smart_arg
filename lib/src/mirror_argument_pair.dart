@@ -1,9 +1,8 @@
 import 'package:reflectable/mirrors.dart';
 
-import 'argument.dart';
+import 'arguments/argument.dart';
 import 'group.dart';
 import 'parser.dart';
-import 'validation_error.dart';
 
 // Convert `areYouAlive` to `are-you-alive`
 String camelToDash(String value) {

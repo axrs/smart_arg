@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:smart_arg_fork/smart_arg_fork.dart';
-import 'package:smart_arg_fork/src/validation_error.dart';
 import 'package:test/test.dart';
 
 import 'smart_arg_test.reflectable.dart';
@@ -476,7 +475,7 @@ void main() {
 
       args.parse(['--dvalue=55.5', '--invalid']);
 
-      expect(args.metadata.errors, []);
+      expect(args.metadata.unknownArguments.first.name, '--invalid');
     });
 
     test('not supplying argument', () {
@@ -517,7 +516,13 @@ void main() {
 
         args.parse(['--greeting=later']);
 
-        expect(args.metadata.errors, []);
+        expect(args.metadata.errors, [
+          NotOneOfPredefinedValuesError(
+            'greeting',
+            ['hello', 'howdy', 'goodbye', 'cya'],
+            'later',
+          )
+        ]);
       });
     });
 
@@ -533,7 +538,10 @@ void main() {
 
         args.parse(['--int-value=0']);
 
-        expect(args.metadata.errors, []);
+        expect(
+          args.metadata.errors,
+          [BelowLowerBoundsArgumentError('int-value', 1, 0)],
+        );
       });
 
       test('throws an error when above the range', () {
@@ -541,7 +549,10 @@ void main() {
 
         args.parse(['--int-value=100']);
 
-        expect(args.metadata.errors, []);
+        expect(
+          args.metadata.errors,
+          [AboveUpperBoundsArgumentError('int-value', 5, 100)],
+        );
       });
     });
 
@@ -559,19 +570,21 @@ void main() {
 
         args.parse(['--double-value=1.1']);
 
-        expect(args.metadata.errors, []);
+        expect(
+          args.metadata.errors,
+          [BelowLowerBoundsArgumentError('double-value', 1.5, 1.1)],
+        );
       });
 
       test('throws an error when above the range', () {
-        try {
-          var args = TestIntegerDoubleMinMax();
+        var args = TestIntegerDoubleMinMax();
 
-          args.parse(['--double-value=4.6']);
+        args.parse(['--double-value=4.6']);
 
-          fail('a double below the maximum did not throw an exception');
-        } on ArgumentError {
-          expect(1, 1);
-        }
+        expect(
+          args.metadata.errors,
+          [AboveUpperBoundsArgumentError('double-value', 4.5, 4.6)],
+        );
       });
     });
 
@@ -625,15 +638,15 @@ void main() {
 
     group('file must exist', () {
       test('file that does not exist', () {
-        try {
-          var args = TestFileDirectoryMustExist();
+        var args = TestFileDirectoryMustExist();
 
-          args.parse(['--file=.${path.separator}file-that-does-not-exist.txt']);
+        args.parse(['--file=.${path.separator}file-that-does-not-exist.txt']);
 
-          fail('file that does not exist did not throw an exception');
-        } on ArgumentError {
-          expect(1, 1);
-        }
+        expect(args.metadata.errors, hasLength(1));
+        var actualError =
+            args.metadata.errors.first as FileMustExistIoArgumentError;
+        expect(actualError.key, 'file');
+        expect(actualError.path, endsWith('file-that-does-not-exist.txt'));
       });
 
       test('file that exists', () {
@@ -714,32 +727,46 @@ void main() {
     });
 
     test('invalid short name parameter', () {
-      try {
-        var args = TestInvalidShortKeyName();
+      var args = TestInvalidShortKeyName();
 
-        args.parse([]).run();
-
-        fail('invalid short name did not throw an exception');
-      } on StateError {
-        expect(1, 1);
-      }
+      expect(
+        () => args.parse([]),
+        throwsA(
+          allOf(
+            isA<StateError>(),
+            predicate(
+              (e) =>
+                  e.toString() ==
+                  'Bad state: Short key (-n) defined by short: should not include a leading -',
+            ),
+          ),
+        ),
+      );
     });
 
     test('invalid long name parameter', () {
-      try {
-        var args = TestInvalidLongKeyName();
+      var args = TestInvalidLongKeyName();
 
-        args.parse([]).run();
-
-        fail('invalid long name did not throw an exception');
-      } on StateError {
-        expect(1, 1);
-      }
+      expect(
+        () => args.parse([]),
+        throwsA(
+          allOf(
+            isA<StateError>(),
+            predicate(
+              (e) =>
+                  e.toString() ==
+                  'Bad state: Long key (null) defined by long: should not include a leading -',
+            ),
+          ),
+        ),
+      );
     });
 
     test('short and long parameters with the same name', () {
       var args = TestShortAndLongSameKey();
+
       args.parse(['-a=5', '--a=10']).run();
+
       expect(args.abc, 5);
       expect(args.a, 10);
     });
@@ -750,7 +777,7 @@ void main() {
 
         args.parse(['--nono=12']);
 
-        expect(args.metadata.errors, []);
+        expect(args.metadata.unknownArguments.first.name, '--nono=12');
       });
 
       test('short option for non-long option works', () {
@@ -788,13 +815,21 @@ void main() {
       });
 
       test('some argument must exist', () {
-        try {
-          var args = TestNoKey();
-          args.parse([]);
-          fail('no key at all should have thrown an exception');
-        } on StateError {
-          expect(1, 1);
-        }
+        var args = TestNoKey();
+
+        expect(
+          () => args.parse([]),
+          throwsA(
+            allOf(
+              isA<StateError>(),
+              predicate(
+                (e) =>
+                    e.toString() ==
+                    'Bad state: No key could be found for long)',
+              ),
+            ),
+          ),
+        );
       });
     });
 
@@ -807,9 +842,10 @@ void main() {
         );
 
         expect(args.metadata.errors, hasLength(1));
-        var err = args.metadata.errors.first as DirectoryMustExistError;
+        var err =
+            args.metadata.errors.first as DirectoryMustExistIoArgumentError;
         expect(err.key, 'directory');
-        expect(err.value, contains('directory-that-does-not-exist'));
+        expect(err.path, contains('directory-that-does-not-exist'));
       });
 
       test('directory that exists', () {
@@ -923,14 +959,19 @@ void main() {
     });
 
     test('extended help with null throws an error', () {
-      try {
-        var args = TestBadExtendedHelp();
-        args.usage();
+      var args = TestBadExtendedHelp();
 
-        fail('with no extended help it should have thrown an exception');
-      } on StateError {
-        expect(1, 1);
-      }
+      expect(
+        () => args.usage(),
+        throwsA(
+          allOf(
+            isA<StateError>(),
+            predicate(
+              (e) => e.toString() == 'Bad state: Help.help must be set',
+            ),
+          ),
+        ),
+      );
     });
 
     test('grouping works', () {

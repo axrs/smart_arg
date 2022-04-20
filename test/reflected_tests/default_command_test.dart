@@ -1,3 +1,6 @@
+import 'dart:io' as io;
+
+import 'package:mocktail/mocktail.dart';
 import 'package:smart_arg_fork/smart_arg_fork.dart';
 import 'package:test/test.dart';
 
@@ -14,7 +17,7 @@ class UnitTestCommand extends SmartArg {
 
   @override
   Future<void> execute() async =>
-      SmartArg.output('Running ${suite ?? 'Unit'} Tests');
+      SmartArg.output.writeln('Running ${suite ?? 'Unit'} Tests');
 }
 
 @SmartArg.reflectable
@@ -27,7 +30,7 @@ class IntegrationTestCommand extends SmartArg {
   bool disableDatabase = false;
 
   @override
-  Future<void> execute() async => SmartArg.output(
+  Future<void> execute() async => SmartArg.output.writeln(
         'Running Integration Tests ${disableDatabase ? 'without database' : 'with database'}',
       );
 }
@@ -43,7 +46,7 @@ class BenchmarkTestCommand extends SmartArg {
 
   @override
   Future<void> execute() async =>
-      SmartArg.output('Running Benchmark Tests $times times');
+      SmartArg.output.writeln('Running Benchmark Tests $times times');
 }
 
 @SmartArg.reflectable
@@ -69,33 +72,44 @@ class RootCommand extends SmartArg {
   BenchmarkTestCommand definedBenchmark = BenchmarkTestCommand()..times = 10;
 }
 
+class MockStdout extends Mock implements io.Stdout {
+  final List<String> written = [];
+
+  @override
+  void writeln([Object? object = '']) {
+    if (object is String){
+      written.add(object);
+    }
+  }
+}
+
 void main() {
   initializeReflectable();
 
   group('DefaultCommand', () {
     late RootCommand cmd;
-    var output = <String>[];
+    late MockStdout stdout;
+    late MockStdout stderr;
 
     setUp(() {
-      SmartArg.output = (Object? s) {
-        if (s is String) {
-          output.add(s);
-        }
-      };
-      output = [];
+      stdout = MockStdout();
+      stderr = MockStdout();
+      SmartArg.output = stdout;
+      SmartArg.errorOutput = stderr;
       cmd = RootCommand();
     });
 
     tearDown(() {
-      SmartArg.output = print;
+      SmartArg.errorOutput = io.stderr;
+      SmartArg.output = io.stdout;
     });
 
     group('help', () {
       test('shows root level help', () async {
         await cmd.parse(['--help']).run();
 
-        expect(output.first, startsWith('A Default Command example'));
-        var fullOutput = output.join('');
+        expect(stdout.written.first, startsWith('A Default Command example'));
+        var fullOutput = stdout.written.join('');
         expect(fullOutput, contains('Runs the projects benchmark tests'));
         expect(fullOutput, contains('Runs the projects integration tests'));
         expect(fullOutput, contains('Runs the projects unit tests'));
@@ -104,8 +118,8 @@ void main() {
       test('shows sub-command help', () async {
         await cmd.parse(['integration', '--help']).run();
 
-        expect(output.first, startsWith('Runs the projects integration tests'));
-        var fullOutput = output.join('');
+        expect(stdout.written.first, startsWith('Runs the projects integration tests'));
+        var fullOutput = stdout.written.join('');
         expect(fullOutput, contains('Disable database connection'));
       });
     });
@@ -114,19 +128,19 @@ void main() {
       test('without args', () async {
         await cmd.parse([]).run();
 
-        expect(output.first, startsWith('Running Unit Tests'));
+        expect(stdout.written.first, startsWith('Running Unit Tests'));
       });
 
       test('forwarding args', () async {
         await cmd.parse(['--suite', 'a-suite']).run();
 
-        expect(output.first, startsWith('Running a-suite Tests'));
+        expect(stdout.written.first, startsWith('Running a-suite Tests'));
       });
 
       test('with help reverts back to root command help', () async {
         await cmd.parse(['--suite', 'a-suite', '--help']).run();
 
-        expect(output.first, startsWith('A Default Command example'));
+        expect(stdout.written.first, startsWith('A Default Command example'));
       });
     });
 
@@ -135,13 +149,13 @@ void main() {
         test('no args', () async {
           await cmd.parse(['unit']).run();
 
-          expect(output.first, startsWith('Running Unit Tests'));
+          expect(stdout.written.first, startsWith('Running Unit Tests'));
         });
 
         test('suite', () async {
           await cmd.parse(['--suite', 'a-suite']).run();
 
-          expect(output.first, startsWith('Running a-suite Tests'));
+          expect(stdout.written.first, startsWith('Running a-suite Tests'));
         });
       });
 
@@ -149,13 +163,13 @@ void main() {
         test('no args', () async {
           await cmd.parse(['benchmark']).run();
 
-          expect(output.first, startsWith('Running Benchmark Tests 1 times'));
+          expect(stdout.written.first, startsWith('Running Benchmark Tests 1 times'));
         });
 
         test('suite', () async {
           await cmd.parse(['benchmark', '--times', '8']).run();
 
-          expect(output.first, startsWith('Running Benchmark Tests 8 times'));
+          expect(stdout.written.first, startsWith('Running Benchmark Tests 8 times'));
         });
       });
     });
@@ -164,13 +178,13 @@ void main() {
       test('with pre-defined args', () async {
         await cmd.parse(['defined-benchmark']).run();
 
-        expect(output.first, startsWith('Running Benchmark Tests 10 times'));
+        expect(stdout.written.first, startsWith('Running Benchmark Tests 10 times'));
       });
 
       test('override args', () async {
         await cmd.parse(['defined-benchmark', '--times', '200']).run();
 
-        expect(output.first, startsWith('Running Benchmark Tests 200 times'));
+        expect(stdout.written.first, startsWith('Running Benchmark Tests 200 times'));
       });
     });
 
@@ -178,13 +192,13 @@ void main() {
       test('with pre-defined args', () async {
         await cmd.parse(['late-defined-benchmark']).run();
 
-        expect(output.first, startsWith('Running Benchmark Tests 5 times'));
+        expect(stdout.written.first, startsWith('Running Benchmark Tests 5 times'));
       });
 
       test('override args', () async {
         await cmd.parse(['late-defined-benchmark', '--times', '100']).run();
 
-        expect(output.first, startsWith('Running Benchmark Tests 100 times'));
+        expect(stdout.written.first, startsWith('Running Benchmark Tests 100 times'));
       });
     });
   });

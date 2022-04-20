@@ -41,7 +41,6 @@ class BooleanArgument extends Argument {
     if (isNegateable == true && long != null) {
       return ['no-$long'];
     }
-
     return [];
   }
 

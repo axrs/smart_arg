@@ -1,10 +1,13 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:reflectable/reflectable.dart';
 
-import '../smart_arg_fork.dart';
+import 'arguments/arguments.dart';
 import 'mirror_argument_pair.dart';
+import 'parser.dart';
 import 'predicates.dart';
-import 'validation_error.dart';
+import 'smart_arg.dart';
 
 /// Given a [parent] instance, resolve the supplied [mpp] as a pre-instantiated,
 /// or newly constructed [SmartArg] object
@@ -156,6 +159,7 @@ List<SmartArgMetadata> resolvePath(
     cmd.unknownArguments
         .where((a) => lastIdx < a.index || cmd.parser.allowTrailingArguments)
         .forEach((element) => cmd.extras.add(element.name));
+    cmd.rawArguments = expandedArgs;
   }
   var argsAfterTerminator = expandedArgs.skip(mainArgs.length + 1).toList();
   path.last.extras.addAll(argsAfterTerminator);

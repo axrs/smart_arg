@@ -4,18 +4,15 @@ import 'package:collection/collection.dart' show IterableExtension;
 import 'package:meta/meta.dart';
 import 'package:reflectable/reflectable.dart';
 
-import 'argument.dart';
-import 'command.dart';
+import 'arguments/arguments.dart';
 import 'extended_help.dart';
 import 'group.dart';
-import 'help_argument.dart';
 import 'mirror_argument_pair.dart';
 import 'parser.dart';
 import 'predicates.dart';
 import 'reflector.dart';
 import 'smart_arg_utils.dart';
 import 'string_utils.dart';
-import 'validation_error.dart';
 
 class IndexedArgument {
   final int index;
@@ -23,6 +20,9 @@ class IndexedArgument {
   final String? value;
 
   IndexedArgument(this.index, this.name, [this.value]);
+
+  @override
+  String toString() => '$index:$name${value != null ? '=$value' : ''}';
 }
 
 class SmartArgMetadata {
@@ -37,6 +37,7 @@ class SmartArgMetadata {
   late SmartArg runnable;
   final Set<ValidationError> errors = {};
   late List<String> extras = [];
+  late List<String> rawArguments = [];
 
   factory SmartArgMetadata.fromRoot(SmartArg runnable) {
     var inst = SmartArgMetadata._(runnable.runtimeType);
@@ -72,21 +73,23 @@ class SmartArgMetadata {
           parameter as Argument,
           currentGroup,
         );
-        for (var key in mpp.keys(parser)) {
-          if (values.containsKey(key)) {
-            errors.add(MultipleKeyConfigurationError(key!));
-          } else {
-            values[key] = mpp;
-          }
-        }
+        var props = mpp.keys(parser);
         if (parameter is Command) {
           commands[mpp.displayKey] = mpp;
-        }
-        if (parameter is DefaultCommand) {
-          if (isNotNull(defaultCommand)) {
-            errors.add(DefaultCommandConfigurationError(type));
+          if (parameter is DefaultCommand) {
+            if (isNotNull(defaultCommand)) {
+              errors.add(MultipleDefaultCommandConfigurationError(type));
+            }
+            defaultCommand = mpp;
           }
-          defaultCommand = mpp;
+        } else {
+          for (var key in props) {
+            if (values.containsKey(key)) {
+              errors.add(MultipleKeyConfigurationError(key!));
+            } else {
+              values[key] = mpp;
+            }
+          }
         }
       }
     }
@@ -102,12 +105,14 @@ class SmartArgRunnable {
 
   Future<void> run() async {
     if (commandPath.any((element) => element.runnable.help)) {
-      SmartArg.output(instance.usage());
+      SmartArg.output.writeln(instance.usage());
       if (instance.metadata.parser.exitOnHelp) {
         exit(0);
       }
     } else if (instance.metadata.errors.isNotEmpty) {
-      print(instance.metadata.errors);
+      for (var err in instance.metadata.errors) {
+        SmartArg.errorOutput.writeln(err);
+      }
       exit(1);
     } else {
       for (var i in commandPath) {
@@ -137,7 +142,10 @@ class SmartArg {
   Map<String, String> environment = Platform.environment;
 
   @visibleForTesting
-  static void Function(Object?) output = print;
+  static Stdout output = stdout;
+
+  @visibleForTesting
+  static Stdout errorOutput = stderr;
 
   //
   // Public API
@@ -157,10 +165,10 @@ class SmartArg {
 
   void onError(String message) {
     if (metadata.parser.exitOnFailure) {
-      output(message);
+      errorOutput.writeln(message);
       if (metadata.parser.printUsageOnExitFailure) {
-        output('');
-        output(usage());
+        output.writeln();
+        output.writeln(usage());
       }
       exit(1);
     }
@@ -180,7 +188,7 @@ class SmartArg {
     var helpDescriptions = <List<String>>[];
 
     if (metadata.values.isNotEmpty) {
-      for (var mpp in metadata.values.values) {
+      for (var mpp in metadata.values.values.toSet()) {
         var keys = <String?>[];
 
         keys.addAll(
@@ -378,13 +386,45 @@ class SmartArg {
   Future<void> postCommandExecute() => Future.value();
 
   Future<void> execute() async {
-    // FIXME support default command
-    // if (isNotNull(_defaultCommand)) {
-    //   await _construct(this, _defaultCommand!).parse(_arguments);
-    // } else {
-    //   _onError(
-    //     'Implementation not defined: ${_arguments.isEmpty ? '<no arguments provided>' : _arguments.join(' ')}',
-    //   );
-    // }
+    var rawArguments = metadata.rawArguments;
+    if (isNotNull(metadata.defaultCommand)) {
+      await construct(this, metadata.defaultCommand!).parse(rawArguments).run();
+    } else {
+      onError(
+        'Implementation not defined: ${rawArguments.isEmpty ? '<no arguments provided>' : rawArguments.join(' ')}',
+      );
+    }
   }
+}
+
+/// A [ValidationError] that indicates that not enough extra arguments were
+/// provided to a [SmartArg] instance.
+class NotEnoughExtrasSuppliedError extends ValidationError {
+  final int minimum;
+  final int actual;
+
+  NotEnoughExtrasSuppliedError(this.minimum, this.actual);
+
+  @override
+  String get message =>
+      'Expected at a minimum of $minimum values for `extras` but only $actual was supplied.';
+
+  @override
+  List<Object?> get props => [minimum, actual];
+}
+
+/// A [ValidationError] that indicates that too many extra arguments were
+/// provided to a [SmartArg] instance
+class TooManyExtrasSuppliedError extends ValidationError {
+  final int maximum;
+  final int actual;
+
+  TooManyExtrasSuppliedError(this.maximum, this.actual);
+
+  @override
+  String get message =>
+      'Expected at a maximum of $maximum values for `extras` but $actual was supplied.';
+
+  @override
+  List<Object?> get props => [maximum, actual];
 }

@@ -21,13 +21,12 @@ void main() {
       });
 
       test('must be one of (invalid)', () {
-        try {
-          var arg = const EnumArgument<Echo>(values: Echo.values);
-          arg.handleValue('key', 'earth');
-          fail('invalid must of should have thrown an error');
-        } on ArgumentError {
-          expect(1, 1);
-        }
+        var arg = const EnumArgument<Echo>(values: Echo.values);
+
+        expect(
+          () => arg.handleValue('key', 'earth'),
+          throwsA(const TypeMatcher<NotOneOfEnumValuesError>()),
+        );
       });
 
       test('additional help lines', () {

@@ -150,10 +150,7 @@ void main() {
         await cmd.parse(['get', '--filename=download.txt']).run();
         expect(cmd.verbose, null);
         expect(whatExecuted, 'get-command: download.txt');
-        expect(cmd.hookOrder, [
-          'preCommandExecute',
-          'postCommandExecute'
-        ]);
+        expect(cmd.hookOrder, ['preCommandExecute', 'postCommandExecute']);
       });
 
       test('executes with no arguments', () async {

@@ -16,13 +16,12 @@ void main() {
       });
 
       test('must be one of (invalid)', () {
-        try {
-          var arg = const StringArgument(mustBeOneOf: ['hello', 'howdy']);
-          arg.handleValue('key', 'cya');
-          fail('invalid must of should have thrown an error');
-        } on ArgumentError {
-          expect(1, 1);
-        }
+        var arg = const StringArgument(mustBeOneOf: ['hello', 'howdy']);
+
+        expect(
+          () => arg.handleValue('key', 'cya'),
+          throwsA(const TypeMatcher<NotOneOfPredefinedValuesError>()),
+        );
       });
     });
   });

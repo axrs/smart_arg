@@ -17,25 +17,21 @@ void main() {
         });
 
         test('too low', () {
-          try {
-            var arg = const DoubleArgument(minimum: 99.9, maximum: 499.9);
-            var _ = arg.handleValue('key', '99.8');
+          var arg = const DoubleArgument(minimum: 99.9, maximum: 499.9);
 
-            fail('value lower than minimum should have thrown an exception');
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('key', '99.8'),
+            throwsA(const TypeMatcher<BelowLowerBoundsArgumentError>()),
+          );
         });
 
         test('too high', () {
-          try {
-            var arg = const DoubleArgument(minimum: 99.9, maximum: 499.9);
-            var _ = arg.handleValue('key', '499.91');
+          var arg = const DoubleArgument(minimum: 99.9, maximum: 499.9);
 
-            fail('value higher than maximum should have thrown an exception');
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('key', '499.91'),
+            throwsA(const TypeMatcher<AboveUpperBoundsArgumentError>()),
+          );
         });
       });
     });

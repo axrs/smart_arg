@@ -1,3 +1,4 @@
+import 'validation_error.dart';
 import 'argument.dart';
 
 class Command extends Argument {
@@ -25,4 +26,19 @@ class DefaultCommand extends Command {
           long: long,
           help: help,
         );
+}
+
+/// A Validation Error that indicates that multiple [DefaultCommand] arguments
+/// were identified for the class of [type]
+class MultipleDefaultCommandConfigurationError
+    extends ArgumentConfigurationError {
+  final Type type;
+
+  MultipleDefaultCommandConfigurationError(this.type);
+
+  @override
+  String get message => '`$type` should only have one DefaultCommand.';
+
+  @override
+  List<Object?> get props => [type];
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
+import '../predicates.dart';
 import 'argument.dart';
 
 class FileArgument extends Argument {
@@ -34,15 +35,28 @@ class FileArgument extends Argument {
   File handleValue(String? key, dynamic value) {
     var normalizedAbsolutePath = path.normalize(path.absolute(value as String));
     var result = File(normalizedAbsolutePath);
-
-    if (mustExist) {
-      if (result.existsSync() == false) {
-        throw ArgumentError('$result for parameter $key does not exist');
-      }
+    if (mustExist && isFalse(result.existsSync())) {
+      throw FileMustExistIoArgumentError(key!, normalizedAbsolutePath);
     }
-
     return result;
   }
 
   List<File> get emptyList => [];
+}
+
+/// An IO Argument Error that indicates that the [FileArgument] identified
+/// by [key] was assigned a [path] that could does not exist.
+class FileMustExistIoArgumentError extends InvalidIoArgumentError {
+  @override
+  final String key;
+  final String path;
+
+  FileMustExistIoArgumentError(this.key, this.path);
+
+  @override
+  String get message =>
+      'The path for `$key` should resolve to a file that exists.';
+
+  @override
+  List<Object?> get props => [key, path];
 }

@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:recase/recase.dart';
 
 import 'argument.dart';
-import 'predicates.dart';
+import '../predicates.dart';
 
 class EnumArgument<T> extends Argument {
   /// Gets the supplied Enum values
@@ -33,8 +33,7 @@ class EnumArgument<T> extends Argument {
   dynamic handleValue(String? key, dynamic value) {
     var val = _findFirstValue(value);
     if (isNull(val)) {
-      var valids = _validArgs();
-      throw ArgumentError('$key must be one of $valids');
+      throw NotOneOfEnumValuesError(key!, _validArgs(), value as String);
     }
     return val;
   }
@@ -50,9 +49,8 @@ class EnumArgument<T> extends Argument {
   }
 
   /// Returns an iterable of Enum values represented in param-case
-  Iterable<String> _validArgs() {
-    return values.map((T e) => e.toString().split('.')[1].paramCase);
-  }
+  List<String> _validArgs() =>
+      values.map((T e) => e.toString().split('.')[1].paramCase).toList();
 
   @override
   List<String> get additionalHelpLines {
@@ -66,4 +64,22 @@ class EnumArgument<T> extends Argument {
     result.add('must be one of $oneOfList');
     return result;
   }
+}
+
+/// An Invalid Argument Error that indicates that the [EnumArgument]
+/// identified by [key] was assigned a [value] that is outside the pre-defined
+/// [EnumArgument.values]
+class NotOneOfEnumValuesError extends InvalidArgumentError {
+  @override
+  final String key;
+  final String value;
+  final List<String> values;
+
+  NotOneOfEnumValuesError(this.key, this.values, this.value);
+
+  @override
+  String get message => '`$key` must be one of $values';
+
+  @override
+  List<Object?> get props => [key, values, value];
 }

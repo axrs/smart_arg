@@ -34,15 +34,10 @@ void main() {
         test('does not exists', () {
           var arg = const DirectoryArgument(mustExist: true);
 
-          try {
-            var _ =
-                arg.handleValue('dir', path.join('.', 'bad-directory-name'));
-            fail(
-              'directory does not exist, an exception should have been thrown',
-            );
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('dir', path.join('.', 'bad-directory-name')),
+            throwsA(const TypeMatcher<DirectoryMustExistIoArgumentError>()),
+          );
         });
       });
     });

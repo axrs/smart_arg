@@ -34,13 +34,10 @@ void main() {
         test('does not exists', () {
           var arg = const FileArgument(mustExist: true);
 
-          try {
-            var _ =
-                arg.handleValue('file', path.join('.', 'does-not-exist.txt'));
-            fail('file does not exist, an exception should have been thrown');
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('file', path.join('.', 'does-not-exist.txt')),
+            throwsA(const TypeMatcher<FileMustExistIoArgumentError>()),
+          );
         });
       });
     });

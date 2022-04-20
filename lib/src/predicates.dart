@@ -15,8 +15,8 @@ bool isShortArgument(String value) =>
     value.length == 2;
 
 bool isShortArgumentAssignment(String value) {
-  var isPotentialShortArgument = value.startsWith('-')
-      && isFalse(value.startsWith('--'));
+  var isPotentialShortArgument =
+      value.startsWith('-') && isFalse(value.startsWith('--'));
   var isLongerThanShort = value.length > 2;
   var isAssignment = isLongerThanShort && value.substring(2, 3) == '=';
   return isPotentialShortArgument && isLongerThanShort && isAssignment;
@@ -26,15 +26,14 @@ bool isShortArgumentAssignment(String value) {
 bool isLongArgument(String value) => value.startsWith('--') && value.length > 2;
 
 /// Returns `true` if the supplied [value] is either a `long` or a `short` argument
-bool isArgument(String value) => isLongArgument(value) || isShortArgument(value);
+bool isArgument(String value) =>
+    isLongArgument(value) || isShortArgument(value);
 
 /// Returns `true` if the supplied [value] is a series of short arguments.
 bool isClusteredShortArguments(String value) {
-  var isPotentialShortArgument = value.startsWith('-')
-      && isFalse(value.startsWith('--'));
+  var isPotentialShortArgument =
+      value.startsWith('-') && isFalse(value.startsWith('--'));
   var isLongerThanShort = value.length > 2;
   var isAssignment = isLongerThanShort && value.substring(2, 3) == '=';
-  return isPotentialShortArgument
-      && isLongerThanShort
-      && isFalse(isAssignment);
+  return isPotentialShortArgument && isLongerThanShort && isFalse(isAssignment);
 }

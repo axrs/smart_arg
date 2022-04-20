@@ -17,25 +17,21 @@ void main() {
         });
 
         test('too low', () {
-          try {
-            var arg = const IntegerArgument(minimum: 100, maximum: 500);
-            var _ = arg.handleValue('key', '95');
+          var arg = const IntegerArgument(minimum: 100, maximum: 500);
 
-            fail('value lower than minimum should have thrown an exception');
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('key', '95'),
+            throwsA(const TypeMatcher<BelowLowerBoundsArgumentError>()),
+          );
         });
 
         test('too high', () {
-          try {
-            var arg = const IntegerArgument(minimum: 100, maximum: 500);
-            var _ = arg.handleValue('key', '505');
+          var arg = const IntegerArgument(minimum: 100, maximum: 500);
 
-            fail('value higher than maximum should have thrown an exception');
-          } on ArgumentError {
-            expect(1, 1);
-          }
+          expect(
+            () => arg.handleValue('key', '505'),
+            throwsA(const TypeMatcher<AboveUpperBoundsArgumentError>()),
+          );
         });
       });
     });

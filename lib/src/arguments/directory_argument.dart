@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 
+import '../predicates.dart';
 import 'argument.dart';
-import 'validation_error.dart';
 
 class DirectoryArgument extends Argument {
   /// If supplied, must this `Directory` property actually exist on disk?
@@ -35,15 +35,28 @@ class DirectoryArgument extends Argument {
   Directory handleValue(String? key, dynamic value) {
     var normalizedAbsolutePath = path.normalize(path.absolute(value as String));
     var result = Directory(normalizedAbsolutePath);
-
-    if (mustExist) {
-      if (result.existsSync() == false) {
-        throw DirectoryMustExistError(key!, normalizedAbsolutePath);
-      }
+    if (mustExist && isFalse(result.existsSync())) {
+      throw DirectoryMustExistIoArgumentError(key!, normalizedAbsolutePath);
     }
-
     return result;
   }
 
   List<Directory> get emptyList => [];
+}
+
+/// An IO Argument Error that indicates that the [DirectoryArgument] identified
+/// by [key] was assigned a [path] that could does not exist.
+class DirectoryMustExistIoArgumentError extends InvalidIoArgumentError {
+  @override
+  final String key;
+  final String path;
+
+  DirectoryMustExistIoArgumentError(this.key, this.path);
+
+  @override
+  String get message =>
+      'The path for `$key` should resolve to a directory that exists.';
+
+  @override
+  List<Object?> get props => [key, path];
 }

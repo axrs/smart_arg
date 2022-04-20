@@ -1,13 +1,13 @@
 import 'argument.dart';
 
-class IntegerArgument extends Argument {
+class DoubleArgument extends Argument {
   /// Minimum number allowed, if any.
-  final int? minimum;
+  final double? minimum;
 
   /// Maximum number allowed, if any.
-  final int? maximum;
+  final double? maximum;
 
-  const IntegerArgument({
+  const DoubleArgument({
     String? short,
     dynamic long,
     String? help,
@@ -26,19 +26,16 @@ class IntegerArgument extends Argument {
         );
 
   @override
-  int? handleValue(String? key, dynamic value) {
-    var result = int.tryParse(value as String);
-
+  double? handleValue(String? key, dynamic value) {
+    var result = double.tryParse(value as String);
     if (minimum != null && result! < minimum!) {
-      throw ArgumentError('$key must be at least $minimum');
+      throw BelowLowerBoundsArgumentError(key!, minimum!, result);
     }
-
     if (maximum != null && result! > maximum!) {
-      throw ArgumentError('$key must be at most $maximum');
+      throw AboveUpperBoundsArgumentError(key!, maximum!, result);
     }
-
     return result;
   }
 
-  List<int> get emptyList => [];
+  List<double> get emptyList => [];
 }
